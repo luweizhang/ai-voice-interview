@@ -6,6 +6,7 @@ const InterviewSelector = ({ onChange }) => {
       <h2>Select Interview Type</h2>
       <button onClick={() => onChange('ml-engineer')}>ML Engineer</button>
       <button onClick={() => onChange('backend-developer')}>Backend Developer</button>
+      <button onClick={() => onChange('frontend-engineer')}>Frontend Engineer</button>
     </div>
   );
 };
