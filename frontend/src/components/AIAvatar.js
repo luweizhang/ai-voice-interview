@@ -47,15 +47,39 @@ const AIAvatar = ({ interviewType }) => {
 
   const [questions, setQuestions] = useState(questionBanks[interviewType] || []);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [userMessage, setUserMessage] = useState('');
+  const [chatResponse, setChatResponse] = useState('');
+
+  const handleSubmit = async () => {
+    const prompt = `You are playing the role of an AI interviewer. 
+    Evaluate the following response and score it from 0 to 100, 
+    where 0 is a junior level and 100 is a staff engineer level. 
+    Provide suggestions for improvement. 
+    Also provide the correct response below.
+    \n\nUser Response: ${userMessage}`;
+    try {
+      const response = await fetch('http://localhost:8003/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: prompt }),
+      });
+      const data = await response.json();
+      setChatResponse(data.response);
+    } catch (error) {
+      console.error('Error communicating with the API:', error);
+    }
+  };
+
+  const nextQuestion = () => {
+    setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % questions.length);
+  };
 
   useEffect(() => {
     setQuestions(questionBanks[interviewType] || []);
     setCurrentQuestionIndex(0);
   }, [interviewType]);
-
-  const nextQuestion = () => {
-    setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % questions.length);
-  };
 
   return (
     <div className="ai-avatar">
@@ -63,6 +87,15 @@ const AIAvatar = ({ interviewType }) => {
       <div className="avatar-placeholder">AI Avatar Placeholder</div>
       <p>{questions[currentQuestionIndex]}</p>
       <button onClick={nextQuestion}>Next Question</button>
+      <textarea
+        value={userMessage}
+        onChange={(e) => setUserMessage(e.target.value)}
+        placeholder="Type your message here..."
+        rows="4"
+        cols="50"
+      />
+      <button onClick={handleSubmit}>Submit Answer</button>
+      {chatResponse && <div className="chat-response">{chatResponse}</div>}
     </div>
   );
 };
