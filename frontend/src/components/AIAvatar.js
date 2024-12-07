@@ -65,7 +65,7 @@ const AIAvatar = ({ interviewType }) => {
     organzed into Evaluation Score, Areas of Improvement, and Correct Response.
     In the evaluation score, also say if the response is junior, mid, senior, or staff level.
     Also, please don't have hashtags in the response.
-    Make sure your response is under 450 tokens.
+  
     
 
 Interview Question: ${questions[currentQuestionIndex]}

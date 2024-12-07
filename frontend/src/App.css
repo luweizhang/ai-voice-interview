@@ -34,7 +34,8 @@ body {
   flex-direction: column;
   align-items: center;
   flex-basis: 85%;
-  height: 95vh; /* Further increase the height to make the window longer vertically */
+  height: 85vh; /* Adjust the height to prevent overflow */
+  overflow-y: auto; /* Add vertical scrolling if needed */
 }
 
 .interview-selector button {
@@ -47,6 +48,7 @@ body {
 
 textarea {
   height: 100px; /* Set a fixed height for the input box */
+  flex-shrink: 0; /* Prevent the textarea from shrinking */
 }
 
 .loading {
