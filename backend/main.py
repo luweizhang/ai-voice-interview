@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 # Set your OpenAI API key directly for testing
-openai.api_key = 'sk-svcacct-CRi0_014K0nuPqO7jY9ldVcsT42sn_fuolmc7x_iTu__5a5gHqgURY6zLUjYihUN-mT3BlbkFJBALZIBwVBTpZf66EGGdXvvCUWoU4iC3VYS0zyhOHAVuLEKnJwdXCCmR88hsebPUMcA'
+openai.api_key = 'sk-svcacct-KGaY88G3BLc5y9-0HYG0PdLaslTK5KdszfJLUKHFg2IM45VSj5HoHdFUjiiF8qCXPltT3BlbkFJPWJZLjASHWgyNIdXZ9G4_1J2HHWcG4OaLdpfSDvd5wh-_3LijHXHVbVV-wCFTNQwGQAA'
 
 app = FastAPI()
 
@@ -31,7 +31,7 @@ async def chat_with_gpt(request: ChatRequest):
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": request.message}],
-            max_tokens=500,
+            max_tokens=420,
             n=1,
             stop=None,
             temperature=0.5,

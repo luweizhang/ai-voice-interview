@@ -44,3 +44,7 @@ body {
   font-size: 16px;
   cursor: pointer;
 }
+
+textarea {
+  height: 100px; /* Set a fixed height for the input box */
+}
