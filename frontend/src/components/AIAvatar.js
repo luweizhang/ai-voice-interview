@@ -56,7 +56,17 @@ const AIAvatar = ({ interviewType }) => {
     where 0 is a junior level and 100 is a staff engineer level. 
     Provide suggestions for improvement. 
     Also provide the correct response below.
-    \n\nUser Response: ${userMessage}`;
+    Can you respond in a way that can be easily parsed by javascript? 
+    Can you delimited each section of the response with three hashtags?
+    Can you make the response in html so thats it can easily rendered by react? 
+    Make sure the entire response is well formatted with headers in bold and 
+    organzed into Evaluation Score, Areas of Improvement, and Correct Response.
+    In the evaluation score, also say if the response is junior, mid, senior, or staff level.
+    Also, please don't have hashtags in the response.
+    
+
+Interview Question: ${questions[currentQuestionIndex]}
+User Response: ${userMessage}`;
     try {
       const response = await fetch('http://localhost:8003/chat', {
         method: 'POST',
@@ -66,7 +76,8 @@ const AIAvatar = ({ interviewType }) => {
         body: JSON.stringify({ message: prompt }),
       });
       const data = await response.json();
-      setChatResponse(data.response);
+      const cleanResponse = data.response.replace(/```html|```|'''/g, '');
+      setChatResponse(cleanResponse);
     } catch (error) {
       console.error('Error communicating with the API:', error);
     }
@@ -86,7 +97,6 @@ const AIAvatar = ({ interviewType }) => {
       <h2>AI Interviewer</h2>
       <div className="avatar-placeholder">AI Avatar Placeholder</div>
       <p>{questions[currentQuestionIndex]}</p>
-      <button onClick={nextQuestion}>Next Question</button>
       <textarea
         value={userMessage}
         onChange={(e) => setUserMessage(e.target.value)}
@@ -94,8 +104,11 @@ const AIAvatar = ({ interviewType }) => {
         rows="4"
         cols="50"
       />
-      <button onClick={handleSubmit}>Submit Answer</button>
-      {chatResponse && <div className="chat-response">{chatResponse}</div>}
+      <div className="button-group">
+        <button onClick={handleSubmit}>Submit Answer</button>
+        <button onClick={nextQuestion}>Next Question</button>
+      </div>
+      {chatResponse && <div className="chat-response" dangerouslySetInnerHTML={{ __html: chatResponse }} />}
     </div>
   );
 };
