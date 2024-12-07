@@ -48,3 +48,9 @@ body {
 textarea {
   height: 100px; /* Set a fixed height for the input box */
 }
+
+.loading {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #888;
+}

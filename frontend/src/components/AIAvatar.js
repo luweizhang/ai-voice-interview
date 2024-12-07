@@ -49,8 +49,10 @@ const AIAvatar = ({ interviewType }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userMessage, setUserMessage] = useState('');
   const [chatResponse, setChatResponse] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    setLoading(true);
     const prompt = `You are playing the role of an AI interviewer. 
     Evaluate the following response and score it from 0 to 100, 
     where 0 is a junior level and 100 is a staff engineer level. 
@@ -63,6 +65,7 @@ const AIAvatar = ({ interviewType }) => {
     organzed into Evaluation Score, Areas of Improvement, and Correct Response.
     In the evaluation score, also say if the response is junior, mid, senior, or staff level.
     Also, please don't have hashtags in the response.
+    Make sure your response is under 450 tokens.
     
 
 Interview Question: ${questions[currentQuestionIndex]}
@@ -80,6 +83,8 @@ User Response: ${userMessage}`;
       setChatResponse(cleanResponse);
     } catch (error) {
       console.error('Error communicating with the API:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,10 +110,10 @@ User Response: ${userMessage}`;
         cols="50"
       />
       <div className="button-group">
-        <button onClick={handleSubmit}>Submit Answer</button>
+        <button onClick={handleSubmit} disabled={loading}>Submit Answer</button>
         <button onClick={nextQuestion}>Next Question</button>
       </div>
-      {chatResponse && <div className="chat-response" dangerouslySetInnerHTML={{ __html: chatResponse }} />}
+      {loading ? <p className="loading">Thinking...</p> : chatResponse && <div className="chat-response" dangerouslySetInnerHTML={{ __html: chatResponse }} />}
     </div>
   );
 };
