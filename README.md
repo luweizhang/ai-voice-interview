@@ -2,6 +2,8 @@
 
 An AI-powered interview platform featuring video avatars and natural language conversation.
 
+![Voice Interview Platform Screenshot](docs/images/screenshot.png)
+
 ## Features
 
 - Interactive AI interviewer with video avatar
