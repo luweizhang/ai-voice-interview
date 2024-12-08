@@ -50,6 +50,8 @@ const AIAvatar = ({ interviewType }) => {
   const [userMessage, setUserMessage] = useState('');
   const [chatResponse, setChatResponse] = useState('');
   const [loading, setLoading] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoHtml, setVideoHtml] = useState('');
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -66,25 +68,58 @@ const AIAvatar = ({ interviewType }) => {
     In the evaluation score, also say if the response is junior, mid, senior, or staff level.
     Also, please don't have hashtags in the response.
   
-    
-
 Interview Question: ${questions[currentQuestionIndex]}
 User Response: ${userMessage}`;
+
     try {
-      const response = await fetch('http://localhost:8003/chat', {
+      console.log('Sending request with prompt:', prompt);
+      const response = await fetch('http://localhost:8000/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({ message: prompt }),
       });
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
-      const cleanResponse = data.response.replace(/```html|```|'''/g, '');
+      console.log('Received response data:', data);
+      
+      if (!data.response) {
+        throw new Error('No response field in data');
+      }
+      
+      // Clean and format the response
+      let cleanResponse = data.response
+        .replace(/```html|```|'''/g, '')  // Remove code block markers
+        .replace(/\n\s*\n/g, '\n')  // Replace multiple newlines with single newline
+        .replace(/\n/g, '<br>')  // Convert remaining newlines to <br>
+        .replace(/\s{2,}/g, ' ')  // Replace multiple spaces with single space
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');  // Convert **text** to <strong>
+      
+      // Add CSS classes for styling
+      cleanResponse = cleanResponse
+        .replace(/<h1>Evaluation Score/g, '<h1 class="evaluation-score">Evaluation Score')
+        .replace(/<h1>Areas of Improvement/g, '<div class="improvements"><h1>Areas of Improvement')
+        .replace(/<h1>Correct Response/g, '</div><div class="correct-response"><h1>Correct Response')
+        + '</div>';
+      
+      console.log('Formatted response:', cleanResponse);
       setChatResponse(cleanResponse);
     } catch (error) {
-      console.error('Error communicating with the API:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
+      setChatResponse(''); // Reset chat response on error
     } finally {
-      setLoading(false);
+      setLoading(false); // Always set loading to false
     }
   };
 
@@ -92,15 +127,62 @@ User Response: ${userMessage}`;
     setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % questions.length);
   };
 
+  const generateVideo = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/generate-video', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: "hello this is a test?" }),
+      });
+      const data = await response.json();
+      if (data.url) {
+        setVideoUrl(data.url);
+      }
+    } catch (error) {
+      console.error('Error generating video:', error);
+    }
+  };
+
+  const fetchVideoHtml = async () => {
+    try {
+      const response = await fetch('/video_player.html');
+      const html = await response.text();
+      setVideoHtml(html);
+    } catch (error) {
+      console.error('Error fetching video HTML:', error);
+    }
+  };
+
   useEffect(() => {
     setQuestions(questionBanks[interviewType] || []);
     setCurrentQuestionIndex(0);
   }, [interviewType]);
 
+  useEffect(() => {
+    generateVideo();
+  }, [currentQuestionIndex]);
+
+  useEffect(() => {
+    generateVideo();
+  }, []);
+
+  useEffect(() => {
+    fetchVideoHtml();
+  }, []);
+
   return (
     <div className="ai-avatar">
       <h2>AI Interviewer</h2>
-      <div className="avatar-placeholder">AI Avatar Placeholder</div>
+      {videoUrl ? (
+        <video width="320" height="240" controls>
+          <source src={videoUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      ) : (
+        <div dangerouslySetInnerHTML={{ __html: videoHtml }} />
+      )}
       <p>{questions[currentQuestionIndex]}</p>
       <textarea
         value={userMessage}
@@ -113,7 +195,11 @@ User Response: ${userMessage}`;
         <button onClick={handleSubmit} disabled={loading}>Submit Answer</button>
         <button onClick={nextQuestion}>Next Question</button>
       </div>
-      {loading ? <p className="loading">Thinking...</p> : chatResponse && <div className="chat-response" dangerouslySetInnerHTML={{ __html: chatResponse }} />}
+      {loading ? (
+        <p className="loading">Thinking...</p>
+      ) : (
+        chatResponse && <div className="chat-response" dangerouslySetInnerHTML={{ __html: chatResponse }} />
+      )}
     </div>
   );
 };

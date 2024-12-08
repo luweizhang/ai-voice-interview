@@ -56,3 +56,61 @@ textarea {
   font-size: 16px;
   color: #888;
 }
+
+.chat-response {
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  line-height: 1.4;
+}
+
+.chat-response h1, 
+.chat-response h2, 
+.chat-response h3 {
+  color: #2c3e50;
+  margin: 15px 0 10px 0;
+  line-height: 1.2;
+}
+
+.chat-response br {
+  display: block;
+  margin: 5px 0;
+  content: "";
+}
+
+.chat-response ul {
+  list-style-type: disc;
+  margin: 10px 0 10px 20px;
+}
+
+.chat-response p {
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
+.chat-response strong {
+  color: #2c3e50;
+}
+
+.evaluation-score {
+  font-size: 1.2em;
+  color: #2c3e50;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.improvements {
+  background-color: #fff3cd;
+  padding: 15px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.correct-response {
+  background-color: #d4edda;
+  padding: 15px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
