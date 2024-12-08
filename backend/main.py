@@ -1,6 +1,7 @@
 import openai
 import os
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from text2video import generate_video
@@ -63,13 +64,41 @@ async def get_questions(interview_type: str):
     }
     return {"questions": questions.get(interview_type, [])}
 
+@app.get("/video-player")
+async def get_video_player():
+    return FileResponse(
+        "video_player.html",
+        media_type="text/html",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        }
+    )
+
 @app.post("/generate-video")
 async def generate_video_endpoint(request: VideoRequest):
-    print(f"Received request with text: {request.text}")
-    video_info = await generate_video(request.text)
-    if video_info:
-        print("Video generated successfully.")
-        return video_info
-    else:
-        print("Failed to generate video.")
-        raise HTTPException(status_code=500, detail="Failed to generate video")
+    try:
+        print(f"Received request with text: {request.text}")
+        
+        if not request.text:
+            raise HTTPException(status_code=400, detail="Text is required")
+            
+        video_info = await generate_video(request.text)
+        
+        if video_info and video_info.get('status') == 'success':
+            print("Video generated successfully:", video_info)
+            return video_info
+        else:
+            print("Failed to generate video")
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to generate video. Please check server logs for details."
+            )
+            
+    except Exception as e:
+        print(f"Error in generate_video_endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )

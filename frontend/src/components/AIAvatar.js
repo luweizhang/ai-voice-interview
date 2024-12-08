@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Hls from 'hls.js';
 
 const AIAvatar = ({ interviewType }) => {
   const questionBanks = {
@@ -53,6 +54,35 @@ const AIAvatar = ({ interviewType }) => {
   const [videoUrl, setVideoUrl] = useState('');
   const [videoHtml, setVideoHtml] = useState('');
 
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoUrl && videoRef.current) {
+      console.log('Initializing video with URL:', videoUrl);
+      if (Hls.isSupported()) {
+        console.log('HLS is supported, creating player');
+        const hls = new Hls({
+          debug: true,
+          enableWorker: true
+        });
+        hls.loadSource(videoUrl);
+        hls.attachMedia(videoRef.current);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          console.log('HLS manifest parsed, starting playback');
+          videoRef.current.play().catch(e => console.error('Playback failed:', e));
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error('HLS error:', data);
+        });
+      } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+        console.log('Native HLS support, using direct source');
+        videoRef.current.src = videoUrl;
+      } else {
+        console.error('HLS is not supported in this browser');
+      }
+    }
+  }, [videoUrl]);
+
   const handleSubmit = async () => {
     setLoading(true);
     const prompt = `You are playing the role of an AI interviewer. 
@@ -73,7 +103,7 @@ User Response: ${userMessage}`;
 
     try {
       console.log('Sending request with prompt:', prompt);
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch('http://localhost:8001/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,33 +157,22 @@ User Response: ${userMessage}`;
     setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % questions.length);
   };
 
-  const generateVideo = async () => {
+  const generateVideo = async (text) => {
     try {
-      const response = await fetch('http://localhost:8000/generate-video', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: "hello this is a test?" }),
-      });
-      const data = await response.json();
-      if (data.url) {
-        setVideoUrl(data.url);
-      }
+      setVideoUrl('http://localhost:8001/video-player');
     } catch (error) {
-      console.error('Error generating video:', error);
+      console.error('Error loading video player:', error);
     }
   };
 
-  const fetchVideoHtml = async () => {
-    try {
-      const response = await fetch('/video_player.html');
-      const html = await response.text();
-      setVideoHtml(html);
-    } catch (error) {
-      console.error('Error fetching video HTML:', error);
+  useEffect(() => {
+    if (videoUrl) {
+      const videoElement = document.getElementById('video-player');
+      if (videoElement) {
+        videoElement.src = videoUrl;
+      }
     }
-  };
+  }, [videoUrl]);
 
   useEffect(() => {
     setQuestions(questionBanks[interviewType] || []);
@@ -168,20 +187,21 @@ User Response: ${userMessage}`;
     generateVideo();
   }, []);
 
-  useEffect(() => {
-    fetchVideoHtml();
-  }, []);
-
   return (
     <div className="ai-avatar">
       <h2>AI Interviewer</h2>
       {videoUrl ? (
-        <video width="320" height="240" controls>
-          <source src={videoUrl} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        <div className="video-container">
+          <iframe
+            id="video-player"
+            src={videoUrl}
+            title="Video Player"
+            style={{ width: '100%', height: '200px', border: 'none' }}
+            allow="autoplay"
+          />
+        </div>
       ) : (
-        <div dangerouslySetInnerHTML={{ __html: videoHtml }} />
+        <p>Loading video player...</p>
       )}
       <p>{questions[currentQuestionIndex]}</p>
       <textarea

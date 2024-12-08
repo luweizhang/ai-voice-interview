@@ -1,64 +1,38 @@
 
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Video Player</title>
-            <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-            <style>
-                .container {
-                    max-width: 800px;
-                    margin: 20px auto;
-                    text-align: center;
-                }
-                video {
-                    width: 100%;
-                    margin: 20px 0;
-                }
-                #playButton {
-                    padding: 10px 20px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    background-color: #4CAF50;
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    margin-bottom: 20px;
-                }
-                #playButton:hover {
-                    background-color: #45a049;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <button id="playButton">Click to Play Video</button>
-                <video id="video" controls playsinline></video>
-            </div>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    var video = document.getElementById('video');
-                    var playButton = document.getElementById('playButton');
-                    var videoSrc = 'http://api.simli.ai/hls/MTAuMTY0LjAuNjU6NjA2OQ==/6e19dc79-ebab-48df-82ba-31b3c94381e5/output.m3u8';
-                    var hls;
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Video Player</title>
+                        <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+                        <style>
+                            .container {
+                                max-width: 800px;
+                                margin: 20px auto;
+                                text-align: center;
+                            }
+                            video {
+                                width: 100%;
+                                margin: 20px 0;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <video id="video" controls></video>
+                        </div>
+                        <script>
+                            var video = document.getElementById('video');
+                            // Using a test video URL that we know works
+                            var videoSrc = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+                            
+                            if (Hls.isSupported()) {
+                                var hls = new Hls();
+                                hls.loadSource(videoSrc);
+                                hls.attachMedia(video);
+                            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                                video.src = videoSrc;
+                            }
+                        </script>
+                    </body>
+                    </html>
                     
-                    if (Hls.isSupported()) {
-                        hls = new Hls();
-                        hls.loadSource(videoSrc);
-                        hls.attachMedia(video);
-                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                        video.src = videoSrc;
-                    }
-
-                    playButton.addEventListener('click', function() {
-                        video.play()
-                            .then(() => {
-                                console.log('Playback started');
-                                playButton.style.display = 'none';
-                            })
-                            .catch(e => console.error('Playback failed:', e));
-                    });
-                });
-            </script>
-        </body>
-        </html>
-        
